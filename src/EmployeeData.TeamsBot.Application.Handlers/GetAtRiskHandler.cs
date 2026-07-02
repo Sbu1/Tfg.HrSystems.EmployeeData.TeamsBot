@@ -21,7 +21,8 @@ public sealed class GetAtRiskHandler(
         GetAtRiskRequest request, Dictionary<string, string>? context, CancellationToken ct)
     {
         DateOnly asAt = DateOnly.FromDateTime(time.GetUtcNow().UtcDateTime).AddDays(-1);
-        IReadOnlyList<TeamMemberMonths> team = await client.GetManagerTeamAsync(request.ManagerEmployeeNumber, months: 1, ct);
+        // Fetch a window so a report with no current-month row yet still resolves to their latest standing.
+        IReadOnlyList<TeamMemberMonths> team = await client.GetManagerTeamAsync(request.ManagerEmployeeNumber, months: 6, ct);
 
         return team
             .Select(member => TeamStandingMapper.ToStanding(member, pace, asAt, goalHours))

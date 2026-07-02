@@ -9,6 +9,10 @@ namespace EmployeeData.TeamsBot.Application.Graph;
 /// </summary>
 public sealed class CallerIdentityResolver(IEmployeeDirectory directory, IEmployeeDataClient employeeData)
 {
+    // Detect manager-ness over a window, not just the current month: a manager's reports may have no rows yet
+    // early in the month (managerteam?months=1 -> []), which would otherwise misclassify them as an Employee.
+    private const int RoleDetectionMonths = 6;
+
     public async Task<CallerIdentity?> ResolveAsync(string aadObjectId, CancellationToken ct)
     {
         int? employeeNumber = await directory.GetEmployeeNumberAsync(aadObjectId, ct);
@@ -17,7 +21,7 @@ public sealed class CallerIdentityResolver(IEmployeeDirectory directory, IEmploy
             return null;
         }
 
-        IReadOnlyList<TeamMemberMonths> team = await employeeData.GetManagerTeamAsync(employeeNumber.Value, months: 1, ct);
+        IReadOnlyList<TeamMemberMonths> team = await employeeData.GetManagerTeamAsync(employeeNumber.Value, RoleDetectionMonths, ct);
         CallerRole role = team.Count > 0 ? CallerRole.Manager : CallerRole.Employee;
 
         return new CallerIdentity(employeeNumber.Value, role);
