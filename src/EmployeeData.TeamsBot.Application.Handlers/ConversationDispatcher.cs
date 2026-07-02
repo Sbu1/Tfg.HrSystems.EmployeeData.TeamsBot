@@ -51,6 +51,12 @@ public sealed class ConversationDispatcher(
             case IntentNames.RemoveMotivation:
                 return await RemoveMotivationAsync(intent, caller, ct);
 
+            case IntentNames.AddMotivationConfirmed:
+                return await CommitAddAsync(intent, caller, ct);
+
+            case IntentNames.RemoveMotivationConfirmed:
+                return await CommitRemoveAsync(intent, caller, ct);
+
             case IntentNames.GetTeamThisMonth:
                 return await ManagerOnly(caller, async () =>
                     TurnResult.Data(intent.Intent, await teamThisMonth.HandleAsync(new GetTeamThisMonthRequest(caller.EmployeeNumber), null, ct)));
@@ -110,17 +116,74 @@ public sealed class ConversationDispatcher(
             return TurnResult.Text("I couldn't find that person on your team.");
         }
 
+        int subject = target ?? caller.EmployeeNumber;
         string description = intent.Arguments.GetValueOrDefault("description", string.Empty);
+        string whose = subject == caller.EmployeeNumber ? "your" : "this report's";
+
+        // FR-4.4: confirm before committing. The resolved params ride on the Confirm button and are re-clamped
+        // on commit (CommitAddAsync) - the round-tripped values are never trusted.
+        var confirmArgs = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["motivationTypeId"] = typeId.ToString(),
+            ["calendarMonth"] = month,
+            ["targetEmployeeNumber"] = subject.ToString(),
+            ["description"] = description
+        };
+        return TurnResult.Data("confirm",
+            new Confirmation($"Log a '{typeName}' motivation for {whose} {month}?", IntentNames.AddMotivationConfirmed, confirmArgs));
+    }
+
+    private async Task<TurnResult> CommitAddAsync(IntentResult intent, CallerIdentity caller, CancellationToken ct)
+    {
+        if (!int.TryParse(intent.Arguments.GetValueOrDefault("motivationTypeId"), out int typeId)
+            || !int.TryParse(intent.Arguments.GetValueOrDefault("targetEmployeeNumber"), out int target))
+        {
+            return TurnResult.Text("Something went wrong preparing that - please try again.");
+        }
+
+        string month = intent.Arguments.GetValueOrDefault("calendarMonth", string.Empty);
+        string description = intent.Arguments.GetValueOrDefault("description", string.Empty);
+
+        // Re-clamp: the target came back via a button payload, so verify it's the caller or a direct report (TR-03).
+        if (target != caller.EmployeeNumber && !await IsDirectReportAsync(caller, target, ct))
+        {
+            return TurnResult.Text("Sorry, I can only log motivations for you or your direct reports.");
+        }
+
         try
         {
             AddMotivationResult result = await addMotivation.HandleAsync(
-                new AddMotivationRequest(caller.EmployeeNumber, target ?? caller.EmployeeNumber, typeId, month, description), null, ct);
-            return TurnResult.Data(intent.Intent, result);
+                new AddMotivationRequest(caller.EmployeeNumber, target, typeId, month, description), null, ct);
+            return TurnResult.Data(IntentNames.AddMotivation, result);
         }
         catch (MotivationNotAllowedException ex)
         {
             return TurnResult.Text($"I can't log that motivation - {ex.Message}");
         }
+    }
+
+    private async Task<TurnResult> CommitRemoveAsync(IntentResult intent, CallerIdentity caller, CancellationToken ct)
+    {
+        if (!int.TryParse(intent.Arguments.GetValueOrDefault("motivationId"), out int motivationId))
+        {
+            return TurnResult.Text("Something went wrong preparing that - please try again.");
+        }
+
+        // RemoveMotivationHandler re-checks ownership against the caller's own set (BR-08), so a tampered id is safe.
+        RemoveMotivationResult result = await removeMotivation.HandleAsync(
+            new RemoveMotivationRequest(caller.EmployeeNumber, motivationId), null, ct);
+        return TurnResult.Text(result.Deleted ? "Removed that motivation." : "I couldn't remove that motivation.");
+    }
+
+    private async Task<bool> IsDirectReportAsync(CallerIdentity caller, int target, CancellationToken ct)
+    {
+        if (caller.Role != CallerRole.Manager)
+        {
+            return false;
+        }
+
+        IReadOnlyList<TeamMemberMonths> team = await employeeData.GetManagerTeamAsync(caller.EmployeeNumber, months: 1, ct);
+        return team.Any(member => member.EmployeeNumber == target);
     }
 
     private async Task<TurnResult> RemoveMotivationAsync(IntentResult intent, CallerIdentity caller, CancellationToken ct)
@@ -135,10 +198,11 @@ public sealed class ConversationDispatcher(
 
         return matches switch
         {
-            [var only] => TurnResult.Text(
-                (await removeMotivation.HandleAsync(new RemoveMotivationRequest(caller.EmployeeNumber, only.Id), null, ct)).Deleted
-                    ? "Removed that motivation."
-                    : "I couldn't remove that motivation."),
+            // FR-4.4: confirm before deleting; the concrete id rides on the Confirm button (ownership re-checked on commit).
+            [var only] => TurnResult.Data("confirm", new Confirmation(
+                $"Remove your {only.CalendarMonth} {only.MotivationTypeValue} motivation?",
+                IntentNames.RemoveMotivationConfirmed,
+                new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase) { ["motivationId"] = only.Id.ToString() })),
             [] => TurnResult.Text("I couldn't find a motivation matching that."),
             _ => TurnResult.Text("More than one motivation matches - please be more specific (month + type).")
         };

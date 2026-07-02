@@ -146,11 +146,13 @@ The turn pipeline: identity/role gating, intent dispatch, guided+NL UX, help, un
     `IntentResult` that **bypasses the LLM**; `OnMembersAdded` sends the welcome card; help shows it too.
   - Tasks: `[x]` help/onboarding + clarify; `[x]` Adaptive Cards per view; `[x]` quick-action buttons + bot
     handling of taps (unit-tested parser + E2E button-bypass turn). Card *visual polish* iterated in the Emulator.
-- `[~]` **F4-S4 - Unknown-user path + write confirmation (FR-4.3, FR-4.4)** - unknown-user done; confirm flow pending
-  - Unmapped user -> "contact HR" message, no data/no lookup (done, in `EmployeeBot`). Writes currently commit
-    then acknowledge; the explicit confirm-before-commit (FR-4.4) is a two-turn button flow, pending with F4-S3 buttons.
-  - Tasks: `[x]` unknown-user response; `[ ]` confirm-before-commit prompt (button carries resolved params);
-    `[ ]` commit-on-confirmed-tap + success/failure ack.
+- `[x]` **F4-S4 - Unknown-user path + write confirmation (FR-4.3, FR-4.4)** - DONE
+  - Unmapped user -> "contact HR" message, no data/no lookup. Add/remove now return a **confirmation card**
+    (`Confirmation` payload) with a Confirm button carrying the resolved params; the `*_confirmed` tap commits.
+    On commit the target is **re-clamped** (add: caller-or-direct-report, TR-03) and remove re-checks ownership
+    (BR-08) - tampered button payloads can't bypass access control. Success/failure acknowledged.
+  - Tasks: `[x]` unknown-user; `[x]` confirm-before-commit prompt; `[x]` commit-on-confirmed-tap + re-clamp + ack
+    (dispatcher unit tests incl. tampered-target rejection; E2E confirm turn).
 
 ## F5 - Employee Self-View (FR-1)
 

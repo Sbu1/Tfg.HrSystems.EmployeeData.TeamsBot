@@ -95,4 +95,81 @@ public sealed class ConversationDispatcherTests
         Assert.NotNull(result.Message);
         Assert.Null(client.LastAdded);
     }
+
+    [Fact]
+    public async Task Add_motivation_asks_to_confirm_before_committing() // FR-4.4
+    {
+        var client = new FakeEmployeeDataClient(new EmployeeHours("Solo", [new MonthlyHours(5, 2026, 80)], []), team: [])
+        {
+            MotivationTypes = [new MotivationType(1, "Annual Leave")]
+        };
+        var args = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["monthPhrase"] = "202605", ["motivationType"] = "Annual Leave", ["description"] = "leave"
+        };
+
+        TurnResult result = await Build(client).DispatchAsync(Intent(IntentNames.AddMotivation, args), Employee, CancellationToken.None);
+
+        var confirmation = Assert.IsType<Confirmation>(result.Payload);
+        Assert.Equal(IntentNames.AddMotivationConfirmed, confirmation.ConfirmIntent);
+        Assert.Null(client.LastAdded); // nothing committed until confirmed
+    }
+
+    [Fact]
+    public async Task Confirmed_add_commits()
+    {
+        var client = new FakeEmployeeDataClient(new EmployeeHours("Solo", [new MonthlyHours(5, 2026, 80)], []), team: []) { AddResultId = 4 };
+        var args = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["motivationTypeId"] = "1", ["calendarMonth"] = "202605", ["targetEmployeeNumber"] = "1", ["description"] = "leave"
+        };
+
+        TurnResult result = await Build(client).DispatchAsync(Intent(IntentNames.AddMotivationConfirmed, args), Employee, CancellationToken.None);
+
+        Assert.Equal("202605", client.LastAdded!.CalendarMonth);
+        Assert.IsType<AddMotivationResult>(result.Payload);
+    }
+
+    [Fact]
+    public async Task Confirmed_add_rejects_a_tampered_target() // TR-03 re-clamp
+    {
+        var client = new FakeEmployeeDataClient(new EmployeeHours("Solo", [new MonthlyHours(5, 2026, 80)], []), team: []);
+        var args = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["motivationTypeId"] = "1", ["calendarMonth"] = "202605", ["targetEmployeeNumber"] = "999", ["description"] = "x"
+        };
+
+        TurnResult result = await Build(client).DispatchAsync(Intent(IntentNames.AddMotivationConfirmed, args), Employee, CancellationToken.None);
+
+        Assert.NotNull(result.Message); // declined
+        Assert.Null(client.LastAdded);
+    }
+
+    [Fact]
+    public async Task Remove_motivation_asks_to_confirm() // FR-4.4
+    {
+        var owned = new MotivationView(4, "202605", 1, "Annual Leave", "x", DateTimeOffset.UnixEpoch);
+        var client = new FakeEmployeeDataClient(team: []) { Motivations = [owned] };
+        var args = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase) { ["selector"] = "annual leave" };
+
+        TurnResult result = await Build(client).DispatchAsync(Intent(IntentNames.RemoveMotivation, args), Employee, CancellationToken.None);
+
+        var confirmation = Assert.IsType<Confirmation>(result.Payload);
+        Assert.Equal(IntentNames.RemoveMotivationConfirmed, confirmation.ConfirmIntent);
+        Assert.Equal("4", confirmation.Arguments["motivationId"]);
+        Assert.Null(client.LastDeletedId);
+    }
+
+    [Fact]
+    public async Task Confirmed_remove_deletes()
+    {
+        var owned = new MotivationView(4, "202605", 1, "Annual Leave", "x", DateTimeOffset.UnixEpoch);
+        var client = new FakeEmployeeDataClient(team: []) { Motivations = [owned], DeleteResult = true };
+        var args = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase) { ["motivationId"] = "4" };
+
+        TurnResult result = await Build(client).DispatchAsync(Intent(IntentNames.RemoveMotivationConfirmed, args), Employee, CancellationToken.None);
+
+        Assert.Equal(4, client.LastDeletedId);
+        Assert.NotNull(result.Message);
+    }
 }

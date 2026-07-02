@@ -82,7 +82,7 @@ public sealed class BotTurnTests
     }
 
     [Fact]
-    public async Task Motivation_is_logged() // TS-03
+    public async Task Motivation_add_asks_to_confirm_first() // FR-4.4 (commit path covered by dispatcher tests)
     {
         var client = new FakeEmployeeDataClient(new EmployeeHours("Solo", [new MonthlyHours(5, 2026, 80)], []), team: [])
         {
@@ -96,7 +96,8 @@ public sealed class BotTurnTests
 
         string reply = await ReplyAsync(Intent(IntentNames.AddMotivation, args), employeeNumber: 1, client);
 
-        Assert.Contains("Logged", reply);
+        Assert.Contains("add_motivation_confirmed", reply); // Confirm button is on the card
+        Assert.Null(client.LastAdded);                      // nothing committed until confirmed
     }
 
     [Fact]

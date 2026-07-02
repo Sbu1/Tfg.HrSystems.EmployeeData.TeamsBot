@@ -14,4 +14,8 @@ public static class IntentNames
     public const string GetAtRisk = "get_at_risk";
     public const string Help = "help";
     public const string Clarify = "clarify";
+
+    // Internal button-only intents (from a confirmation card's Confirm tap; never emitted by the LLM).
+    public const string AddMotivationConfirmed = "add_motivation_confirmed";
+    public const string RemoveMotivationConfirmed = "remove_motivation_confirmed";
 }

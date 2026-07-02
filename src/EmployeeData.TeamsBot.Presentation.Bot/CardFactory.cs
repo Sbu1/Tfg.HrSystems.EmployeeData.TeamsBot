@@ -26,10 +26,31 @@ public sealed class CardFactory(TurnResponseRenderer renderer)
 
     public Attachment ForResult(TurnResult result)
     {
+        if (result.Payload is Confirmation confirmation)
+        {
+            return ConfirmCard(confirmation);
+        }
+
         var card = new AdaptiveCard(Schema);
         card.Body.Add(new AdaptiveTextBlock(Title(result.Intent)) { Size = AdaptiveTextSize.Medium, Weight = AdaptiveTextWeight.Bolder });
         card.Body.Add(new AdaptiveTextBlock(renderer.Render(result)) { Wrap = true });
         AddActions(card, FollowUpActions(result.Intent));
+        return Attach(card);
+    }
+
+    private static Attachment ConfirmCard(Confirmation confirmation)
+    {
+        var card = new AdaptiveCard(Schema);
+        card.Body.Add(new AdaptiveTextBlock(confirmation.Prompt) { Wrap = true, Weight = AdaptiveTextWeight.Bolder });
+
+        var confirmData = new Dictionary<string, object> { ["intent"] = confirmation.ConfirmIntent };
+        foreach (KeyValuePair<string, string> argument in confirmation.Arguments)
+        {
+            confirmData[argument.Key] = argument.Value;
+        }
+
+        card.Actions.Add(new AdaptiveSubmitAction { Title = "Confirm", Data = confirmData });
+        card.Actions.Add(new AdaptiveSubmitAction { Title = "Cancel", Data = new Dictionary<string, object> { ["intent"] = IntentNames.Help } });
         return Attach(card);
     }
 

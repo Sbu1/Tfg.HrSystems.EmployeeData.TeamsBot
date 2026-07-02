@@ -21,6 +21,7 @@ public sealed class TurnResponseRenderer
         IReadOnlyList<TeamMemberHistory> teamHistory => RenderTeamHistory(teamHistory),
         IReadOnlyList<MotivationView> motivations => RenderMotivations(motivations),
         AddMotivationResult add => add.Updated ? "Updated your motivation." : "Logged your motivation.",
+        Confirmation confirmation => confirmation.Prompt,
         _ => "Done."
     };
 
