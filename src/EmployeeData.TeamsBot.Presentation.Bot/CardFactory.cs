@@ -3,6 +3,7 @@ using EmployeeData.TeamsBot.Application.Models;
 using EmployeeData.TeamsBot.Domain.Constants;
 using EmployeeData.TeamsBot.Domain.Models;
 using Microsoft.Bot.Schema;
+using Newtonsoft.Json.Linq;
 
 namespace EmployeeData.TeamsBot.Presentation.Bot;
 
@@ -101,6 +102,8 @@ public sealed class CardFactory(TurnResponseRenderer renderer)
     private static Attachment Attach(AdaptiveCard card) => new()
     {
         ContentType = AdaptiveCard.ContentType,
-        Content = card
+        // Serialize to a JObject. Passing the live AdaptiveCard object as Content makes the Bot SDK's
+        // AttachmentMemoryStreamConverter recurse infinitely (stack overflow) when the real CloudAdapter sends it.
+        Content = JObject.Parse(card.ToJson())
     };
 }
