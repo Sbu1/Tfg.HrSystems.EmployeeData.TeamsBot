@@ -1,0 +1,17 @@
+{
+  "request": { "method": "GET", "urlPathPattern": "/api/employee.*" },
+  "response": {
+    "status": 200,
+    "headers": { "Content-Type": "application/json" },
+    "jsonBody": {
+      "employeeMonths": [
+        { "employeeNumber": "123456", "employeeName": "Du Toit, Werner", "calendarMonth": 6, "calendarYear": 2026, "timeInHoursMonthToDate": 84 },
+        { "employeeNumber": "123456", "employeeName": "Du Toit, Werner", "calendarMonth": 5, "calendarYear": 2026, "timeInHoursMonthToDate": 116 }
+      ],
+      "teamCurrentMonth": [
+        { "playerName": "player1", "calendarMonth": 6, "calendarYear": 2026, "timeInHoursMonthToDate": 43 },
+        { "playerName": "player2", "calendarMonth": 6, "calendarYear": 2026, "timeInHoursMonthToDate": 42 }
+      ]
+    }
+  }
+}

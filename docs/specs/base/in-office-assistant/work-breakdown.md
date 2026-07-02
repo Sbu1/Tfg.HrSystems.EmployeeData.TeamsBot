@@ -261,13 +261,14 @@ Unit tests for Domain live under F2. This feature covers the shared harness, int
   - Azure Bot (messaging endpoint -> prod route); Teams manifest (`bots` scope `personal`), single-tenant;
     sideload -> tenant-admin approval (EC-07/TR-08).
   - Tasks: `[ ]` Azure Bot + app id/password (Vault); `[ ]` Teams manifest; `[ ]` sideload + approval (IT).
-- `[ ]` **F10-S4 - Containerisation & local dev compose**
-  - `Dockerfile` under `build/` (multi-stage .NET 10 build, non-root runtime, `/healthz` container healthcheck)
-    producing the image the pipeline ships (F10-S1). Local-dev `docker-compose.yml` (bot + Redis + a
-    stubbed/WireMock Employee Data API) per the Orchestration repo-structure standard, so a dev can run the bot
-    against the Bot Framework Emulator without cluster access.
-  - Tasks: `[ ]` `Dockerfile` (multi-stage, non-root, healthcheck); `[ ]` `.dockerignore`; `[ ]` local
-    `docker-compose.yml` (bot + Redis + EDA stub); `[ ]` README "run locally" instructions.
+- `[x]` **F10-S4 - Containerisation & local dev compose** - DONE
+  - `build/Dockerfile` (multi-stage .NET 10, non-root uid 10001, curl `/healthz` healthcheck); `.dockerignore`
+    (excludes bin/obj, docs, and the dev key); `docker-compose.yml` (bot + Redis + WireMock Employee Data API
+    stub with mappings under `build/wiremock`); `.env.example` (AOAI key via env, git-ignored); README "run
+    locally" section. `docker compose config` validated.
+  - Tasks: `[x]` Dockerfile; `[x]` `.dockerignore`; `[x]` `docker-compose.yml` + WireMock mappings + `.env`;
+    `[x]` README. Note: `docker compose up --build` needs image pulls + the AOAI key; Graph identity still
+    needs creds for a full turn (not stubbed).
   - Note: the deployment **environments** (dev/test/prod) are covered across F1-S4 (per-env `appsettings`),
     F10-S1 (branch->env deploy), and F10-S2 (per-env config-maps/secrets) - no separate env ticket needed.
 

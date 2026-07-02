@@ -1,0 +1,18 @@
+{
+  "request": { "method": "GET", "urlPathPattern": "/api/motivationtype.*" },
+  "response": {
+    "status": 200,
+    "headers": { "Content-Type": "application/json" },
+    "jsonBody": [
+      { "id": 1, "value": "Annual Leave" },
+      { "id": 2, "value": "Family Responsibility Leave" },
+      { "id": 3, "value": "Injury Leave" },
+      { "id": 4, "value": "Parental Leave" },
+      { "id": 5, "value": "Pre-Maternity Leave" },
+      { "id": 6, "value": "Sick Leave" },
+      { "id": 7, "value": "Study Leave" },
+      { "id": 8, "value": "Sports Leave" },
+      { "id": 9, "value": "WFH with permission" }
+    ]
+  }
+}

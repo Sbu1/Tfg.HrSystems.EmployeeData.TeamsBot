@@ -13,3 +13,36 @@ the existing `Tfg.HrSystems.EmployeeData` API.
 > Spec-driven build: the signed-off product spec is the source of truth for scope and requirements;
 > the technical spec covers architecture and implementation. No application code is written until the
 > technical spec is signed off.
+
+Work-item tracker: [`docs/specs/base/in-office-assistant/work-breakdown.md`](docs/specs/base/in-office-assistant/work-breakdown.md)
+
+## Build & test
+
+```bash
+dotnet build Tfg.HrSystems.EmployeeData.TeamsBot.sln
+dotnet test test/EmployeeData.TeamsBot.Tests
+```
+
+## Run locally
+
+**Bare host (fastest):**
+
+```bash
+dotnet run --project src/EmployeeData.TeamsBot.Presentation.Bot
+```
+
+Put your dev Azure OpenAI key in `src/EmployeeData.TeamsBot.Presentation.Bot/appsettings.Development.json`
+(`AzureOpenAI:ApiKey`) - this file is git-ignored. Then point the **Bot Framework Emulator** at
+`http://localhost:5234/api/messages` (leave App ID / Password blank). Health: `GET /healthz`.
+
+**Docker Compose (bot + Redis + a WireMock Employee Data API stub):**
+
+```bash
+cp .env.example .env      # then set AZURE_OPENAI_API_KEY (git-ignored)
+docker compose up --build
+```
+
+Bot on `:5234`, Redis on `:6379`, Employee Data API stub on `:8080`. Note: a full conversational turn also
+needs Microsoft Graph identity (`Graph:*` app credentials), which is not stubbed locally - without it the bot
+starts and serves `/healthz`; end-to-end turn behaviour is covered by the `TestAdapter` tests
+(`test/EmployeeData.TeamsBot.Tests/EndToEnd`).
