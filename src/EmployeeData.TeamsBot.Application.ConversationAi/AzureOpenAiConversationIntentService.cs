@@ -15,10 +15,16 @@ namespace EmployeeData.TeamsBot.Application.ConversationAi;
 public sealed class AzureOpenAiConversationIntentService : IConversationIntentService
 {
     private const string SystemPrompt =
-        "You classify a TFG staff member's Microsoft Teams message into exactly one function. Call the single " +
-        "most appropriate function. Never put employee numbers or ids in arguments - use names and phrases as " +
-        "the user said them. If the message is ambiguous or unsupported, call clarify with a short reason. Use " +
-        "help for greetings or 'what can you do' questions.";
+        "You route a TFG staff member's Microsoft Teams message to exactly one function - always call one. Pick " +
+        "the single best-matching function even when the wording is loose; only call clarify when the message " +
+        "genuinely matches no function. Treat 'my team', 'my employees', 'my staff', 'my reports' as the caller's " +
+        "team. Routing guide: own hours / how am I doing this month -> get_my_hours; my past months / history -> " +
+        "get_my_history; compare to peers / leaderboard / ranking -> get_peer_standing; team or employees standing " +
+        "now / 'team hours' / how is my team doing -> get_team_this_month; team over past months / 'last month(s) " +
+        "team' / team history -> get_team_history (set months to how many months back); who is behind or at risk " +
+        "of missing the goal -> get_at_risk; log or record a motivation -> add_motivation; remove or delete a " +
+        "motivation -> remove_motivation; a greeting or 'what can you do' -> help. Never put employee numbers or " +
+        "ids in arguments - use the names and phrases the user said.";
 
     private readonly ChatClient _chat;
     private readonly IReadOnlyList<ChatTool> _tools;
