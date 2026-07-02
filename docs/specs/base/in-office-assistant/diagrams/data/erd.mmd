@@ -1,0 +1,17 @@
+erDiagram
+    UserIdentityState {
+        string aadObjectId PK
+        int employeeNumber
+        datetime resolvedAtUtc
+        int ttlSeconds
+    }
+    ConversationState {
+        string conversationId PK
+        int ttlSeconds
+    }
+    ConversationTurn {
+        string role
+        string text
+        int sequence
+    }
+    ConversationState ||--o{ ConversationTurn : "last 6 turns"

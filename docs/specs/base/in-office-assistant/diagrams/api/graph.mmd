@@ -1,0 +1,23 @@
+sequenceDiagram
+    participant Bot as EmployeeBot
+    participant D as IEmployeeDirectory
+    participant R as Redis (identity cache)
+    participant G as Microsoft Graph
+
+    Bot->>D: GetEmployeeNumberAsync(aadObjectId)
+    D->>R: get identity:{aadObjectId}
+    alt cache hit
+        R-->>D: employeeNumber
+        D-->>Bot: employeeNumber
+    else cache miss
+        R-->>D: (none)
+        D->>G: GET /v1.0/users/{id}?$select=employeeId (app token)
+        alt employeeId populated
+            G-->>D: employeeId
+            D->>R: set identity (TTL 12h)
+            D-->>Bot: employeeNumber
+        else null / not found
+            G-->>D: employeeId = null
+            D-->>Bot: null -> FR-4.3 (point to HR, no data)
+        end
+    end

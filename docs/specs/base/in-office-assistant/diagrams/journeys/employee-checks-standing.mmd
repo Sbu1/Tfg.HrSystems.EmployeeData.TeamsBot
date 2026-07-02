@@ -1,0 +1,23 @@
+sequenceDiagram
+    actor E as Employee
+    participant T as Microsoft Teams
+    participant B as In-Office Hours Assistant
+    participant API as Employee Data API
+
+    E->>T: "How am I tracking this month?"
+    T->>B: message activity
+    B->>B: resolve identity & role
+    alt user not mapped to an employee
+        B-->>T: explain + point to HR (no data)
+    else mapped
+        B->>API: get my hours (employee view)
+        alt API unavailable
+            API-->>B: error
+            B-->>T: "Hours service is unreachable, please retry"
+        else data returned
+            API-->>B: MTD hours, 6-month history, masked peers
+            B->>B: compute gap, pace status, leaderboard (merge "you")
+            B-->>T: MTD vs 100h, status, history, peer rank ("as at" date)
+        end
+    end
+    T-->>E: conversational answer (+ quick actions)

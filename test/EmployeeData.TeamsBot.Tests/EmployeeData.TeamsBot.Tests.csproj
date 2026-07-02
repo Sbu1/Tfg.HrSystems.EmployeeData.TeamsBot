@@ -1,0 +1,36 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector" Version="6.0.4" />
+    <PackageReference Include="Microsoft.Bot.Builder.Testing" Version="4.23.1" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageReference Include="xunit" Version="2.9.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\EmployeeData.TeamsBot.Domain.Models\EmployeeData.TeamsBot.Domain.Models.csproj" />
+    <ProjectReference Include="..\..\src\EmployeeData.TeamsBot.Domain.Interfaces\EmployeeData.TeamsBot.Domain.Interfaces.csproj" />
+    <ProjectReference Include="..\..\src\EmployeeData.TeamsBot.Domain.Services\EmployeeData.TeamsBot.Domain.Services.csproj" />
+    <ProjectReference Include="..\..\src\EmployeeData.TeamsBot.Domain.Constants\EmployeeData.TeamsBot.Domain.Constants.csproj" />
+    <ProjectReference Include="..\..\src\EmployeeData.TeamsBot.Application.EmployeeDataApi\EmployeeData.TeamsBot.Application.EmployeeDataApi.csproj" />
+    <ProjectReference Include="..\..\src\EmployeeData.TeamsBot.Application.ConversationAi\EmployeeData.TeamsBot.Application.ConversationAi.csproj" />
+    <ProjectReference Include="..\..\src\EmployeeData.TeamsBot.Application.Handlers\EmployeeData.TeamsBot.Application.Handlers.csproj" />
+    <ProjectReference Include="..\..\src\EmployeeData.TeamsBot.Application.Models\EmployeeData.TeamsBot.Application.Models.csproj" />
+    <ProjectReference Include="..\..\src\EmployeeData.TeamsBot.Application.Validators\EmployeeData.TeamsBot.Application.Validators.csproj" />
+    <ProjectReference Include="..\..\src\EmployeeData.TeamsBot.Application.Graph\EmployeeData.TeamsBot.Application.Graph.csproj" />
+    <ProjectReference Include="..\..\src\EmployeeData.TeamsBot.Presentation.Bot\EmployeeData.TeamsBot.Presentation.Bot.csproj" />
+  </ItemGroup>
+
+</Project>

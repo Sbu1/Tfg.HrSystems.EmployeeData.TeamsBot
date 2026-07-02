@@ -1,0 +1,19 @@
+sequenceDiagram
+    participant Bot as EmployeeBot
+    participant H as Use-case Handler
+    participant C as IEmployeeDataClient
+    participant API as Employee Data API
+
+    Bot->>H: HandleAsync(request, callerEmployeeNumber)
+    Note over H: employee number is clamped to the caller
+    H->>C: GetEmployeeAsync / GetManagerTeamAsync / motivation op
+    C->>API: GET/POST/DELETE (CA gateway, internal)
+    alt success (200)
+        API-->>C: JSON payload
+        C-->>H: mapped DTOs
+        H-->>Bot: response value object
+    else error / timeout (5xx, network)
+        API-->>C: error
+        C-->>H: throws / failure
+        H-->>Bot: failure -> "service unreachable" (BR-09)
+    end

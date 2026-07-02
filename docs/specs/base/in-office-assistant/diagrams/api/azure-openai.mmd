@@ -1,0 +1,15 @@
+sequenceDiagram
+    participant Bot as EmployeeBot
+    participant I as IConversationIntentService
+    participant AOAI as Azure OpenAI (gpt-4o-mini)
+
+    Bot->>I: ResolveIntentAsync(userText, history)
+    Note over I,AOAI: only the user's text + function defs are sent — no employee data
+    I->>AOAI: chat.completions (tools=intents, tool_choice=auto, temp=0)
+    alt tool call returned
+        AOAI-->>I: finish_reason=tool_calls, function name + args
+        I-->>Bot: IntentResult(intent, params)
+    else throttled / timeout / no tool call
+        AOAI-->>I: 429 / 5xx / plain message
+        I-->>Bot: IntentResult(clarify) -> show quick-action buttons
+    end

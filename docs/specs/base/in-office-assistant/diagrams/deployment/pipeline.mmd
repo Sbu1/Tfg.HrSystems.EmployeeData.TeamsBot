@@ -1,0 +1,27 @@
+flowchart LR
+    Dev["dev branch"] -->|Azure DevOps + Tfg.Build.Templates| BD{Build &amp; test}
+    Main["main branch"] -->|pipeline| BD
+    Tag["release tag"] -->|pipeline| BD
+
+    BD --> Img["Container image"]
+    Img --> DevEnv["OpenShift: Dev"]
+    Img --> TestEnv["OpenShift: Test"]
+    Img --> ProdEnv["OpenShift: Prod"]
+
+    Dev -. promotes .-> DevEnv
+    Main -. promotes .-> TestEnv
+    Tag -. promotes .-> ProdEnv
+
+    subgraph K8S["build/k8s manifests (per env)"]
+        CM["config-map"]
+        DEP["deployment"]
+        HPA["hpa"]
+        SVC["service"]
+        RT["routes"]
+    end
+    ProdEnv --- K8S
+    Vault[("HashiCorp Vault<br/>secrets")] --> DEP
+    Dyn["Dynatrace<br/>logs + metrics"] --- ProdEnv
+
+    classDef env fill:#d6eaf8,stroke:#2874a6,color:#1b2631;
+    class DevEnv,TestEnv,ProdEnv env;

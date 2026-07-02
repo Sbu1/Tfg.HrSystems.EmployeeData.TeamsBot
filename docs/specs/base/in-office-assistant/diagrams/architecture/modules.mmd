@@ -1,0 +1,49 @@
+flowchart TB
+    subgraph Presentation
+        P["Presentation.Bot<br/>(host, BotController, EmployeeBot, Cards)"]
+    end
+    subgraph Application
+        H["Application.Handlers"]
+        AM["Application.Models"]
+        AV["Application.Validators"]
+        EDAc["Application.EmployeeDataApi"]
+        GR["Application.Graph"]
+        AI["Application.ConversationAi"]
+        HC["Application.HealthCheck"]
+    end
+    subgraph Infrastructure
+        ST["Infrastructure.State (Redis IStorage)"]
+    end
+    subgraph Domain
+        DI["Domain.Interfaces"]
+        DM["Domain.Models"]
+        DS["Domain.Services (Pace, Leaderboard)"]
+        DO["Domain.Observability"]
+        DC["Domain.Constants"]
+    end
+
+    P --> H
+    P --> ST
+    P --> AI
+    P --> EDAc
+    P --> GR
+    H --> DI
+    H --> DS
+    H --> AM
+    EDAc --> DI
+    GR --> DI
+    AI --> DI
+    AV --> DM
+    HC --> DI
+    ST --> DI
+    DI --> DM
+    DS --> DM
+
+    classDef dom fill:#d5f5e3,stroke:#239b56,color:#0e4d27;
+    classDef app fill:#d6eaf8,stroke:#2874a6,color:#1b2631;
+    classDef inf fill:#fdebd0,stroke:#ca6f1e,color:#5b2c06;
+    classDef pres fill:#fadbd8,stroke:#cb4335,color:#641e16;
+    class DI,DM,DS,DO,DC dom;
+    class H,AM,AV,EDAc,GR,AI,HC app;
+    class ST inf;
+    class P pres;

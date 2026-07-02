@@ -1,0 +1,24 @@
+flowchart LR
+    User([Employee / Manager])
+
+    subgraph Assistant["In-Office Hours Assistant (v1 scope)"]
+        direction TB
+        C1["C-1 Teams assistant<br/>(the chat experience)"]
+        C2["C-2 Identity &amp; role resolver"]
+        C3["C-3 Hours &amp; pace logic"]
+        C4["C-4 Motivations handler"]
+    end
+
+    C5[("C-5 Employee Data API<br/>(existing backend)")]
+
+    User <--> C1
+    C1 --> C2
+    C1 --> C3
+    C1 --> C4
+    C3 --> C5
+    C4 --> C5
+
+    classDef comp fill:#d6eaf8,stroke:#2874a6,color:#1b2631;
+    classDef ext fill:#fdebd0,stroke:#ca6f1e,color:#5b2c06;
+    class C1,C2,C3,C4 comp;
+    class C5 ext;

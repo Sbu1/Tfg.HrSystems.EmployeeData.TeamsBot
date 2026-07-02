@@ -1,0 +1,22 @@
+flowchart TB
+    subgraph Hierarchy["Org hierarchy (from the hours data)"]
+        direction TB
+        CTO["Top management / CTO<br/>(v2 persona)"]
+        MGR["Manager<br/>(v1 persona)"]
+        EMP["Employee<br/>(v1 persona)"]
+        CTO --> MGR
+        MGR --> EMP
+    end
+
+    BOT(["In-Office Hours Assistant<br/>(Teams bot)"])
+
+    EMP -->|"checks own hours,<br/>history, peer standing;<br/>logs motivations"| BOT
+    MGR -->|"team standing,<br/>at-risk, logs on<br/>behalf of reports"| BOT
+    CTO -.->|"roll-up / export<br/>(v2, not built)"| BOT
+
+    classDef v1 fill:#d6eaf8,stroke:#2874a6,color:#1b2631;
+    classDef v2 fill:#f2f3f4,stroke:#aab7b8,color:#566573,stroke-dasharray: 4 3;
+    classDef bot fill:#d5f5e3,stroke:#239b56,color:#0e4d27;
+    class EMP,MGR v1;
+    class CTO v2;
+    class BOT bot;

@@ -1,0 +1,28 @@
+flowchart LR
+    User([Employee / Manager])
+    Teams[Microsoft Teams]
+    Conn[Bot Framework Connector]
+
+    subgraph OCP["OpenShift (HPA pods)"]
+        Bot["EmployeeData.TeamsBot service<br/>(Tfg.ApiShell)<br/>POST /api/messages"]
+    end
+
+    Redis[("Redis<br/>identity cache +<br/>conversation state")]
+    EDA[("Employee Data API<br/>(internal / CA gateway)")]
+    Graph[("Microsoft Graph<br/>employeeId")]
+    AOAI[("Azure OpenAI<br/>gpt-4o-mini")]
+
+    User <--> Teams
+    Teams <--> Conn
+    Conn <-->|activities| Bot
+    Bot <--> Redis
+    Bot -->|hours / team / motivations| EDA
+    Bot -->|resolve identity| Graph
+    Bot -->|intent only, no PII| AOAI
+
+    classDef svc fill:#d6eaf8,stroke:#2874a6,color:#1b2631;
+    classDef ext fill:#fdebd0,stroke:#ca6f1e,color:#5b2c06;
+    classDef store fill:#e8daef,stroke:#7d3c98,color:#3d1c52;
+    class Bot svc;
+    class EDA,Graph,AOAI ext;
+    class Redis store;
