@@ -15,7 +15,7 @@ internal static class TeamStandingMapper
 
         if (latest is null)
         {
-            return new TeamMemberStanding(member.EmployeeName, member.EmployeeNumber, 0, PaceStatus.TooEarly, 0); // no data (EC-07)
+            return new TeamMemberStanding(member.EmployeeName, member.EmployeeNumber, 0, PaceStatus.TooEarly, 0, 0, 0); // no data (EC-07)
         }
 
         // Evaluate pace as at the latest month with data: the reference date (T-1) if that is the current month,
@@ -29,6 +29,6 @@ internal static class TeamStandingMapper
             ? Math.Max(0, goalHours - result.ProjectedMonthEndHours)
             : 0;
 
-        return new TeamMemberStanding(member.EmployeeName, member.EmployeeNumber, latest.Hours, result.Status, shortfall);
+        return new TeamMemberStanding(member.EmployeeName, member.EmployeeNumber, latest.Hours, result.Status, shortfall, latest.CalendarMonth, latest.CalendarYear);
     }
 }

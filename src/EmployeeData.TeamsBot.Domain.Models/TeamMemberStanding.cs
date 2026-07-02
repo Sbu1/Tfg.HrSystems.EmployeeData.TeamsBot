@@ -9,4 +9,6 @@ public sealed record TeamMemberStanding(
     int EmployeeNumber,
     int Hours,
     PaceStatus Status,
-    int ProjectedShortfall);
+    int ProjectedShortfall,
+    int CalendarMonth,
+    int CalendarYear);

@@ -25,7 +25,7 @@ public sealed class GetReportHoursHandler(
         TeamMemberMonths? member = team.FirstOrDefault(m => m.EmployeeNumber == request.TargetEmployeeNumber);
 
         return member is null
-            ? new TeamMemberStanding(string.Empty, request.TargetEmployeeNumber, 0, PaceStatus.TooEarly, 0)
+            ? new TeamMemberStanding(string.Empty, request.TargetEmployeeNumber, 0, PaceStatus.TooEarly, 0, 0, 0)
             : TeamStandingMapper.ToStanding(member, pace, asAt, goalHours);
     }
 }

@@ -60,7 +60,8 @@ public sealed class TurnResponseRenderer
     private static string RenderMember(TeamMemberStanding member)
     {
         string risk = member.ProjectedShortfall > 0 ? $", ~{member.ProjectedShortfall}h short" : string.Empty;
-        return $"{member.EmployeeName}: {member.Hours}h ({member.Status}{risk})";
+        string period = member.CalendarYear > 0 ? $"{member.CalendarYear}-{member.CalendarMonth:D2}, " : string.Empty;
+        return $"{member.EmployeeName}: {member.Hours}h ({period}{member.Status}{risk})";
     }
 
     private static string RenderMemberHistory(TeamMemberHistory member)
@@ -83,14 +84,15 @@ public sealed class TurnResponseRenderer
     {
         if (team.Count == 0)
         {
-            return "No team data for this month.";
+            return "No team hours recorded yet.";
         }
 
-        var sb = new StringBuilder("Your team this month:\n");
+        // The month is shown per row: reports often have no current-month rows yet, so we show each one's
+        // latest available month rather than claiming "this month".
+        var sb = new StringBuilder("Your team's latest standing:\n");
         foreach (TeamMemberStanding member in team)
         {
-            string risk = member.ProjectedShortfall > 0 ? $", ~{member.ProjectedShortfall}h short" : string.Empty;
-            sb.AppendLine($"- {member.EmployeeName}: {member.Hours}h ({member.Status}{risk})");
+            sb.AppendLine($"- {RenderMember(member)}");
         }
 
         return sb.ToString().TrimEnd();
