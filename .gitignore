@@ -8,9 +8,6 @@
 appsettings.Development.json
 **/appsettings.Development.json
 
-# Local docker-compose env (holds the dev Azure OpenAI key)
-.env
-
 # dotenv files
 .env
 

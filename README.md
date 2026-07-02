@@ -25,24 +25,33 @@ dotnet test test/EmployeeData.TeamsBot.Tests
 
 ## Run locally
 
-**Bare host (fastest):**
+The bot talks to the **real** Employee Data API (test environment - the default `EmployeeApi:BaseUrl` in
+`appsettings.json`) and Azure OpenAI. Put your dev values in
+`src/EmployeeData.TeamsBot.Presentation.Bot/appsettings.Development.json` (git-ignored) and run:
 
 ```bash
 dotnet run --project src/EmployeeData.TeamsBot.Presentation.Bot
 ```
 
-Put your dev Azure OpenAI key in `src/EmployeeData.TeamsBot.Presentation.Bot/appsettings.Development.json`
-(`AzureOpenAI:ApiKey`) - this file is git-ignored. Then point the **Bot Framework Emulator** at
-`http://localhost:5234/api/messages` (leave App ID / Password blank). Health: `GET /healthz`.
-
-**Docker Compose (bot + Redis + a WireMock Employee Data API stub):**
-
-```bash
-cp .env.example .env      # then set AZURE_OPENAI_API_KEY (git-ignored)
-docker compose up --build
+```jsonc
+// appsettings.Development.json
+{
+  "AzureOpenAI": { "ApiKey": "<your dev key>" },
+  "Graph": { "DevEmployeeNumber": 123456 }   // dev-only: resolves the caller without Graph identity
+}
 ```
 
-Bot on `:5234`, Redis on `:6379`, Employee Data API stub on `:8080`. Note: a full conversational turn also
-needs Microsoft Graph identity (`Graph:*` app credentials), which is not stubbed locally - without it the bot
-starts and serves `/healthz`; end-to-end turn behaviour is covered by the `TestAdapter` tests
-(`test/EmployeeData.TeamsBot.Tests/EndToEnd`).
+`Graph:DevEmployeeNumber` is a dev/demo shortcut - set it to a real employee number in the test data so a caller
+resolves without Microsoft Graph (which needs app credentials + TOQ-04). Then connect the **Bot Framework
+Emulator** to `http://localhost:5234/api/messages` (blank App ID / Password). Health: `GET /healthz`.
+
+Optional local Redis (used once F3-S4 state lands): `docker compose -f src/docker-compose.yml up -d`.
+
+## Container image (CI / deploy)
+
+`build/docker/Dockerfile` runs a published output (runtime-only image, mirroring the Transaction Backend convention):
+
+```bash
+dotnet publish src/EmployeeData.TeamsBot.Presentation.Bot -c Release -o build/docker/publish
+docker build -t teamsbot build/docker
+```

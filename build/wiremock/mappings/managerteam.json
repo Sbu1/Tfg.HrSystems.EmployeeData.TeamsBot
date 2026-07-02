@@ -1,8 +1,0 @@
-{
-  "request": { "method": "GET", "urlPathPattern": "/api/managerteam.*" },
-  "response": {
-    "status": 200,
-    "headers": { "Content-Type": "application/json" },
-    "jsonBody": []
-  }
-}

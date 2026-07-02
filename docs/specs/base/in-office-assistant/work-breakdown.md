@@ -261,13 +261,15 @@ Unit tests for Domain live under F2. This feature covers the shared harness, int
   - Azure Bot (messaging endpoint -> prod route); Teams manifest (`bots` scope `personal`), single-tenant;
     sideload -> tenant-admin approval (EC-07/TR-08).
   - Tasks: `[ ]` Azure Bot + app id/password (Vault); `[ ]` Teams manifest; `[ ]` sideload + approval (IT).
-- `[x]` **F10-S4 - Containerisation & local dev compose** - DONE
-  - `build/Dockerfile` (multi-stage .NET 10, non-root uid 10001, curl `/healthz` healthcheck); `.dockerignore`
-    (excludes bin/obj, docs, and the dev key); `docker-compose.yml` (bot + Redis + WireMock Employee Data API
-    stub with mappings under `build/wiremock`); `.env.example` (AOAI key via env, git-ignored); README "run
-    locally" section. `docker compose config` validated.
-  - Tasks: `[x]` Dockerfile; `[x]` `.dockerignore`; `[x]` `docker-compose.yml` + WireMock mappings + `.env`;
-    `[x]` README. Note: `docker compose up --build` needs image pulls + the AOAI key; Graph identity still
+- `[x]` **F10-S4 - Containerisation & local dev compose** - DONE (mirrors the Transaction Backend convention)
+  - `build/docker/Dockerfile` - runtime-only image over a pre-published output (`COPY publish /app`, chmod +x,
+    net10 `aspnet:10.0-bookworm-slim`), matching `Soulful.StoreSystems.TransactionBackend.Payment`.
+  - `src/docker-compose.yml` (named stack, `container_name` per service, pinned images) runs only the local
+    **dependencies** - Redis + a WireMock Employee Data API stub (`src/wiremock/mappings`) - **not** the app; the
+    dev runs the bot from the IDE/CLI against them. README "Run locally" + "Container image" sections. `docker
+    compose config` validated.
+  - Tasks: `[x]` Dockerfile (build/docker); `[x]` src/docker-compose.yml + WireMock mappings; `[x]` README.
+    Note: bot's AOAI key stays in `appsettings.Development.json` (git-ignored, IDE run); Graph identity still
     needs creds for a full turn (not stubbed).
   - Note: the deployment **environments** (dev/test/prod) are covered across F1-S4 (per-env `appsettings`),
     F10-S1 (branch->env deploy), and F10-S2 (per-env config-maps/secrets) - no separate env ticket needed.

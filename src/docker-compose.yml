@@ -1,0 +1,13 @@
+name: employee-data-teamsbot
+services:
+#=========================================================================
+# Redis Cache
+# -----------------
+# Bot conversation + identity state (StackExchange.Redis). Consumed once
+# F3-S4 lands; not required by the current build. Connection: localhost:6379
+#=========================================================================
+  redis:
+    image: redis:8.2.1-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
