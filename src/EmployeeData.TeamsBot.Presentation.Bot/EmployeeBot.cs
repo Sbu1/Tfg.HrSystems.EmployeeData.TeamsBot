@@ -66,11 +66,25 @@ public sealed class EmployeeBot(
     {
         foreach (ChannelAccount member in membersAdded)
         {
-            if (member.Id != turnContext.Activity.Recipient.Id)
+            if (member.Id == turnContext.Activity.Recipient.Id)
             {
-                await turnContext.SendActivityAsync(
-                    MessageFactory.Attachment(cards.Welcome(CallerRole.Employee)), cancellationToken);
+                continue;
             }
+
+            // Greet with a role-aware card so a manager sees team actions from the start.
+            CallerRole role = CallerRole.Employee;
+            try
+            {
+                string aadObjectId = member.AadObjectId ?? turnContext.Activity.From?.AadObjectId ?? string.Empty;
+                CallerIdentity? caller = await identity.ResolveAsync(aadObjectId, cancellationToken);
+                role = caller?.Role ?? CallerRole.Employee;
+            }
+            catch
+            {
+                // Fall back to the employee welcome if identity can't be resolved yet (BR-09).
+            }
+
+            await turnContext.SendActivityAsync(MessageFactory.Attachment(cards.Welcome(role)), cancellationToken);
         }
     }
 
