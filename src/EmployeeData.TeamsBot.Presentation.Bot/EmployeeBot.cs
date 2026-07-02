@@ -27,10 +27,11 @@ public sealed class EmployeeBot(
     {
         try
         {
+            // Always resolve (don't short-circuit on a missing AadObjectId): the Bot Framework Emulator doesn't
+            // set one, and the dev identity shortcut ignores it. Real Teams always provides it; with real Graph
+            // an empty id resolves to unmapped -> the FR-4.3 message below.
             string aadObjectId = turnContext.Activity.From?.AadObjectId ?? string.Empty;
-            CallerIdentity? caller = aadObjectId.Length == 0
-                ? null
-                : await identity.ResolveAsync(aadObjectId, cancellationToken);
+            CallerIdentity? caller = await identity.ResolveAsync(aadObjectId, cancellationToken);
 
             if (caller is null)
             {
