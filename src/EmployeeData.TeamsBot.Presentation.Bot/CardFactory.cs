@@ -94,6 +94,8 @@ public sealed class CardFactory(TurnResponseRenderer renderer)
         IntentNames.GetTeamThisMonth => "Team this month",
         IntentNames.GetTeamHistory => "Team history",
         IntentNames.GetAtRisk => "At risk",
+        IntentNames.GetReportHours => "Report - this month",
+        IntentNames.GetReportHistory => "Report - history",
         IntentNames.ListMotivations => "Motivations",
         IntentNames.AddMotivation => "Motivation",
         _ => "Result"

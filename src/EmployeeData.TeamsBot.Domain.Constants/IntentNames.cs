@@ -12,6 +12,8 @@ public static class IntentNames
     public const string GetTeamThisMonth = "get_team_this_month";
     public const string GetTeamHistory = "get_team_history";
     public const string GetAtRisk = "get_at_risk";
+    public const string GetReportHours = "get_report_hours";
+    public const string GetReportHistory = "get_report_history";
     public const string Help = "help";
     public const string Clarify = "clarify";
 

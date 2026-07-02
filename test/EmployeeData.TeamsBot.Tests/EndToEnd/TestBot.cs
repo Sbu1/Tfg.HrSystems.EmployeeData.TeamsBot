@@ -30,6 +30,8 @@ internal static class TestBot
             new GetTeamThisMonthHandler(client, pace, time),
             new GetTeamHistoryHandler(client),
             new GetAtRiskHandler(client, pace, time),
+            new GetReportHoursHandler(client, pace, time),
+            new GetReportHistoryHandler(client),
             client, time);
 
         var resolver = new CallerIdentityResolver(new FakeEmployeeDirectory(employeeNumber), client);

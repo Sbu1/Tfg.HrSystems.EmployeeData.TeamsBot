@@ -23,6 +23,10 @@ public static class ConversationIntentTools
         new(IntentNames.GetTeamHistory, "A manager asks about their team's hours over past months (e.g. 'team history', \"last month's team hours\", 'team hours over the last 3 months').",
             """{"type":"object","properties":{"months":{"type":"string","description":"How many months back; 1 for 'last month', defaults to 6 when omitted."}},"required":[]}"""),
         new(IntentNames.GetAtRisk, "A manager asks who on their team is behind or at risk of missing the goal.", NoParameters),
+        new(IntentNames.GetReportHours, "A manager asks about one specific report's / team member's hours this month by name (e.g. 'how is Sibusiso doing', \"Sibusiso's hours\").",
+            """{"type":"object","properties":{"targetEmployeeName":{"type":"string","description":"The direct report's name as the user said it."}},"required":["targetEmployeeName"]}"""),
+        new(IntentNames.GetReportHistory, "A manager asks about one specific report's hours over past months by name (e.g. \"Sibusiso's hours for the past 3 months\", \"how has Sibusiso been doing lately\").",
+            """{"type":"object","properties":{"targetEmployeeName":{"type":"string","description":"The direct report's name."},"months":{"type":"string","description":"How many months back; defaults to 6."}},"required":["targetEmployeeName"]}"""),
         new(IntentNames.Help, "The user greets the bot or asks what it can do.", NoParameters),
         new(IntentNames.Clarify, "The request is ambiguous or unsupported; ask the user to clarify.",
             """{"type":"object","properties":{"reason":{"type":"string"}},"required":["reason"]}""")

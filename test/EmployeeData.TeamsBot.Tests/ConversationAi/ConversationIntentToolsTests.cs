@@ -14,6 +14,7 @@ public sealed class ConversationIntentToolsTests
             IntentNames.GetMyHours, IntentNames.GetMyHistory, IntentNames.GetPeerStanding,
             IntentNames.ListMotivations, IntentNames.AddMotivation, IntentNames.RemoveMotivation,
             IntentNames.GetTeamThisMonth, IntentNames.GetTeamHistory, IntentNames.GetAtRisk,
+            IntentNames.GetReportHours, IntentNames.GetReportHistory,
             IntentNames.Help, IntentNames.Clarify
         ];
 
@@ -23,6 +24,6 @@ public sealed class ConversationIntentToolsTests
     [Fact]
     public void Builds_one_chat_tool_per_intent()
     {
-        Assert.Equal(11, ConversationIntentTools.Build().Count);
+        Assert.Equal(13, ConversationIntentTools.Build().Count);
     }
 }

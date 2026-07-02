@@ -16,6 +16,8 @@ public sealed class TurnResponseRenderer
     {
         EmployeeStanding standing => RenderStanding(standing),
         Leaderboard leaderboard => RenderLeaderboard(leaderboard),
+        TeamMemberStanding member => RenderMember(member),
+        TeamMemberHistory memberHistory => RenderMemberHistory(memberHistory),
         IReadOnlyList<MonthHours> history => RenderHistory(history),
         IReadOnlyList<TeamMemberStanding> team => RenderTeam(team),
         IReadOnlyList<TeamMemberHistory> teamHistory => RenderTeamHistory(teamHistory),
@@ -50,6 +52,28 @@ public sealed class TurnResponseRenderer
         foreach (LeaderboardRow row in leaderboard.Rows)
         {
             sb.AppendLine($"- #{row.Rank} {row.PlayerName}: {row.Hours}h{(row.IsYou ? " (you)" : string.Empty)}");
+        }
+
+        return sb.ToString().TrimEnd();
+    }
+
+    private static string RenderMember(TeamMemberStanding member)
+    {
+        string risk = member.ProjectedShortfall > 0 ? $", ~{member.ProjectedShortfall}h short" : string.Empty;
+        return $"{member.EmployeeName}: {member.Hours}h ({member.Status}{risk})";
+    }
+
+    private static string RenderMemberHistory(TeamMemberHistory member)
+    {
+        if (member.Months.Count == 0)
+        {
+            return $"No history for {member.EmployeeName}.";
+        }
+
+        var sb = new StringBuilder($"{member.EmployeeName} - recent months:\n");
+        foreach (MonthHours month in member.Months)
+        {
+            sb.AppendLine($"- {month.CalendarYear}-{month.CalendarMonth:D2}: {month.Hours}h {(month.GoalMet ? "(goal met)" : "(missed)")}");
         }
 
         return sb.ToString().TrimEnd();

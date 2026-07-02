@@ -24,6 +24,8 @@ public sealed class ConversationDispatcher(
     GetTeamThisMonthHandler teamThisMonth,
     GetTeamHistoryHandler teamHistory,
     GetAtRiskHandler atRisk,
+    GetReportHoursHandler reportHours,
+    GetReportHistoryHandler reportHistory,
     IEmployeeDataClient employeeData,
     TimeProvider time)
 {
@@ -68,6 +70,12 @@ public sealed class ConversationDispatcher(
             case IntentNames.GetAtRisk:
                 return await ManagerOnly(caller, async () =>
                     TurnResult.Data(intent.Intent, await atRisk.HandleAsync(new GetAtRiskRequest(caller.EmployeeNumber), null, ct)));
+
+            case IntentNames.GetReportHours:
+                return await ManagerOnly(caller, () => ReportHoursAsync(intent, caller, ct));
+
+            case IntentNames.GetReportHistory:
+                return await ManagerOnly(caller, () => ReportHistoryAsync(intent, caller, ct));
 
             case IntentNames.Help:
                 return TurnResult.Text(HelpText(caller.Role));
@@ -182,7 +190,7 @@ public sealed class ConversationDispatcher(
             return false;
         }
 
-        IReadOnlyList<TeamMemberMonths> team = await employeeData.GetManagerTeamAsync(caller.EmployeeNumber, months: 1, ct);
+        IReadOnlyList<TeamMemberMonths> team = await employeeData.GetManagerTeamAsync(caller.EmployeeNumber, months: 6, ct);
         return team.Any(member => member.EmployeeNumber == target);
     }
 
@@ -208,6 +216,42 @@ public sealed class ConversationDispatcher(
         };
     }
 
+    private async Task<TurnResult> ReportHoursAsync(IntentResult intent, CallerIdentity caller, CancellationToken ct)
+    {
+        if (!TryArg(intent, "targetEmployeeName", out string name))
+        {
+            return TurnResult.Text("Which team member would you like to see?");
+        }
+
+        (int? target, bool nameUnresolved) = await ResolveTargetAsync(intent, caller, ct);
+        if (nameUnresolved || target is null)
+        {
+            return TurnResult.Text($"I couldn't find '{name}' on your team.");
+        }
+
+        TeamMemberStanding standing = await reportHours.HandleAsync(
+            new GetReportHoursRequest(caller.EmployeeNumber, target.Value), null, ct);
+        return TurnResult.Data(intent.Intent, standing);
+    }
+
+    private async Task<TurnResult> ReportHistoryAsync(IntentResult intent, CallerIdentity caller, CancellationToken ct)
+    {
+        if (!TryArg(intent, "targetEmployeeName", out string name))
+        {
+            return TurnResult.Text("Which team member's history would you like?");
+        }
+
+        (int? target, bool nameUnresolved) = await ResolveTargetAsync(intent, caller, ct);
+        if (nameUnresolved || target is null)
+        {
+            return TurnResult.Text($"I couldn't find '{name}' on your team.");
+        }
+
+        TeamMemberHistory history = await reportHistory.HandleAsync(
+            new GetReportHistoryRequest(caller.EmployeeNumber, target.Value, MonthsArg(intent)), null, ct);
+        return TurnResult.Data(intent.Intent, history);
+    }
+
     private async Task<(int? Target, bool NameUnresolved)> ResolveTargetAsync(IntentResult intent, CallerIdentity caller, CancellationToken ct)
     {
         if (!TryArg(intent, "targetEmployeeName", out string name))
@@ -220,7 +264,8 @@ public sealed class ConversationDispatcher(
             return (null, true); // an employee can't target anyone else
         }
 
-        IReadOnlyList<TeamMemberMonths> team = await employeeData.GetManagerTeamAsync(caller.EmployeeNumber, months: 1, ct);
+        // Use a window (not months:1) so the roster is present for name matching even early in the month.
+        IReadOnlyList<TeamMemberMonths> team = await employeeData.GetManagerTeamAsync(caller.EmployeeNumber, months: 6, ct);
         List<TeamMemberMonths> matches = team.Where(m => m.EmployeeName.Contains(name, StringComparison.OrdinalIgnoreCase)).ToList();
         return matches.Count == 1 ? (matches[0].EmployeeNumber, false) : (null, true);
     }

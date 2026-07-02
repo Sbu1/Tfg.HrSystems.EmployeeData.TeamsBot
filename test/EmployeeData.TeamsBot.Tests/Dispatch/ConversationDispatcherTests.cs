@@ -26,6 +26,8 @@ public sealed class ConversationDispatcherTests
             new GetTeamThisMonthHandler(client, pace, time),
             new GetTeamHistoryHandler(client),
             new GetAtRiskHandler(client, pace, time),
+            new GetReportHoursHandler(client, pace, time),
+            new GetReportHistoryHandler(client),
             client, time);
     }
 
@@ -158,6 +160,44 @@ public sealed class ConversationDispatcherTests
         Assert.Equal(IntentNames.RemoveMotivationConfirmed, confirmation.ConfirmIntent);
         Assert.Equal("4", confirmation.Arguments["motivationId"]);
         Assert.Null(client.LastDeletedId);
+    }
+
+    [Fact]
+    public async Task Report_hours_resolves_a_named_report_for_a_manager()
+    {
+        var client = new FakeEmployeeDataClient(team:
+            [new TeamMemberMonths("Sikhakhane, Sibusiso", 111, [new MonthlyHours(6, 2026, 100)])]);
+        var args = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase) { ["targetEmployeeName"] = "Sibusiso" };
+
+        TurnResult result = await Build(client).DispatchAsync(Intent(IntentNames.GetReportHours, args), Manager, CancellationToken.None);
+
+        var standing = Assert.IsType<TeamMemberStanding>(result.Payload);
+        Assert.Equal(111, standing.EmployeeNumber);
+    }
+
+    [Fact]
+    public async Task Report_hours_unknown_name_asks_to_clarify()
+    {
+        var client = new FakeEmployeeDataClient(team:
+            [new TeamMemberMonths("Sikhakhane, Sibusiso", 111, [new MonthlyHours(6, 2026, 100)])]);
+        var args = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase) { ["targetEmployeeName"] = "Nobody" };
+
+        TurnResult result = await Build(client).DispatchAsync(Intent(IntentNames.GetReportHours, args), Manager, CancellationToken.None);
+
+        Assert.NotNull(result.Message);
+        Assert.Null(result.Payload);
+    }
+
+    [Fact]
+    public async Task Report_hours_is_declined_for_an_employee()
+    {
+        var client = new FakeEmployeeDataClient(team: []);
+        var args = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase) { ["targetEmployeeName"] = "Sibusiso" };
+
+        TurnResult result = await Build(client).DispatchAsync(Intent(IntentNames.GetReportHours, args), Employee, CancellationToken.None);
+
+        Assert.NotNull(result.Message);
+        Assert.Null(result.Payload);
     }
 
     [Fact]

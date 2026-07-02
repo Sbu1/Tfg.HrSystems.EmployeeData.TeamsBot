@@ -22,7 +22,9 @@ public sealed class AzureOpenAiConversationIntentService : IConversationIntentSe
         "get_my_history; compare to peers / leaderboard / ranking -> get_peer_standing; team or employees standing " +
         "now / 'team hours' / how is my team doing -> get_team_this_month; team over past months / 'last month(s) " +
         "team' / team history -> get_team_history (set months to how many months back); who is behind or at risk " +
-        "of missing the goal -> get_at_risk; log or record a motivation -> add_motivation; remove or delete a " +
+        "of missing the goal -> get_at_risk; ONE named report's hours this month -> get_report_hours (set " +
+        "targetEmployeeName); a named report's history / 'X's hours for the past N months' -> get_report_history " +
+        "(set targetEmployeeName and months); log or record a motivation -> add_motivation; remove or delete a " +
         "motivation -> remove_motivation; a greeting or 'what can you do' -> help. Never put employee numbers or " +
         "ids in arguments - use the names and phrases the user said.";
 

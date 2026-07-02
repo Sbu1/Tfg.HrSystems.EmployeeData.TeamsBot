@@ -16,6 +16,8 @@ public static class HandlerRegistration
         services.AddScoped<GetTeamThisMonthHandler>();
         services.AddScoped<GetTeamHistoryHandler>();
         services.AddScoped<GetAtRiskHandler>();
+        services.AddScoped<GetReportHoursHandler>();
+        services.AddScoped<GetReportHistoryHandler>();
         services.AddScoped<ConversationDispatcher>();
         return services;
     }
