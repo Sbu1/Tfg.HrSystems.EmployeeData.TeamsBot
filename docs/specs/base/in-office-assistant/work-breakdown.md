@@ -140,11 +140,12 @@ The turn pipeline: identity/role gating, intent dispatch, guided+NL UX, help, un
     `[ ]` `targetEmployeeName`->number + `selector`->id resolvers (need team/motivation lists); `[ ]` dispatcher
     that builds the handler request + invokes it; `[ ]` clamp integration.
   - Also closes the relocated F2-S4 validator work (month format / type id now live here).
-- `[~]` **F4-S3 - Guided + natural language, quick-action cards, help/onboarding (FR-4.2)** - text done; cards + buttons pending
-  - Free text -> intent works end-to-end; role-appropriate help + clarify implemented (dispatcher + renderer);
-    `OnMembersAdded` welcome. `TurnResponseRenderer` produces text replies today.
-  - Tasks: `[x]` help/onboarding + clarify (text); `[ ]` Adaptive Cards per view (swap in behind `TurnResult`);
-    `[ ]` `Action.Submit` quick-action buttons carrying `data.intent` (bypass LLM) + bot handling of button taps.
+- `[x]` **F4-S3 - Guided + natural language, quick-action cards, help/onboarding (FR-4.2)** - DONE
+  - Free text -> intent end-to-end; `CardFactory` renders a role-aware welcome card + per-view result cards with
+    `Action.Submit` quick-action buttons; `QuickActionParser` turns a tapped button's `data.intent` into an
+    `IntentResult` that **bypasses the LLM**; `OnMembersAdded` sends the welcome card; help shows it too.
+  - Tasks: `[x]` help/onboarding + clarify; `[x]` Adaptive Cards per view; `[x]` quick-action buttons + bot
+    handling of taps (unit-tested parser + E2E button-bypass turn). Card *visual polish* iterated in the Emulator.
 - `[~]` **F4-S4 - Unknown-user path + write confirmation (FR-4.3, FR-4.4)** - unknown-user done; confirm flow pending
   - Unmapped user -> "contact HR" message, no data/no lookup (done, in `EmployeeBot`). Writes currently commit
     then acknowledge; the explicit confirm-before-commit (FR-4.4) is a two-turn button flow, pending with F4-S3 buttons.

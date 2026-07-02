@@ -14,6 +14,7 @@ builder.Services.AddGraphDirectory(builder.Configuration);
 builder.Services.AddDomainServices();
 builder.Services.AddHandlers();
 builder.Services.AddSingleton<TurnResponseRenderer>();
+builder.Services.AddSingleton<CardFactory>();
 builder.Services.AddBotAdapter();
 
 var app = builder.Build();

@@ -4,6 +4,9 @@ using EmployeeData.TeamsBot.Presentation.Bot;
 using EmployeeData.TeamsBot.Tests.Handlers;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Adapters;
+using Microsoft.Bot.Schema;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace EmployeeData.TeamsBot.Tests.EndToEnd;
 
@@ -13,6 +16,19 @@ public sealed class BotTurnTests
     private static IntentResult Intent(string name, Dictionary<string, string>? args = null) =>
         new(name, args ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase));
 
+    // Data results reply as Adaptive Cards (no Text); fall back to the serialized card so content asserts hold.
+    private static string ReplyContent(IActivity activity)
+    {
+        IMessageActivity message = activity.AsMessageActivity();
+        if (!string.IsNullOrEmpty(message.Text))
+        {
+            return message.Text;
+        }
+
+        object? content = message.Attachments?.FirstOrDefault()?.Content;
+        return content is null ? string.Empty : JsonConvert.SerializeObject(content);
+    }
+
     private static async Task<string> ReplyAsync(IntentResult intent, int? employeeNumber, FakeEmployeeDataClient client)
     {
         EmployeeBot bot = TestBot.Build(intent, employeeNumber, client);
@@ -21,7 +37,7 @@ public sealed class BotTurnTests
 
         await new TestFlow(adapter, bot.OnTurnAsync)
             .Send("hi")
-            .AssertReply(activity => reply = activity.AsMessageActivity().Text)
+            .AssertReply(activity => reply = ReplyContent(activity))
             .StartTestAsync();
 
         return reply;
@@ -81,5 +97,25 @@ public sealed class BotTurnTests
         string reply = await ReplyAsync(Intent(IntentNames.AddMotivation, args), employeeNumber: 1, client);
 
         Assert.Contains("Logged", reply);
+    }
+
+    [Fact]
+    public async Task Quick_action_button_bypasses_the_llm()
+    {
+        var client = new FakeEmployeeDataClient(new EmployeeHours("Solo", [new MonthlyHours(6, 2026, 84)], []), team: []);
+        // The intent service would say "clarify" - the tapped button must win and run get_my_hours instead.
+        EmployeeBot bot = TestBot.Build(Intent(IntentNames.Clarify), employeeNumber: 1, client);
+        TestAdapter adapter = TestBot.Adapter();
+
+        var tap = (Activity)MessageFactory.Text(string.Empty);
+        tap.Value = JObject.FromObject(new { intent = IntentNames.GetMyHours });
+
+        string reply = string.Empty;
+        await new TestFlow(adapter, bot.OnTurnAsync)
+            .Send(tap)
+            .AssertReply(activity => reply = ReplyContent(activity))
+            .StartTestAsync();
+
+        Assert.Contains("84h", reply);
     }
 }

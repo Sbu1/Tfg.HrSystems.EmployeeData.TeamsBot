@@ -33,7 +33,8 @@ internal static class TestBot
             client, time);
 
         var resolver = new CallerIdentityResolver(new FakeEmployeeDirectory(employeeNumber), client);
-        return new EmployeeBot(resolver, new FakeConversationIntentService(intent), dispatcher, new TurnResponseRenderer());
+        var renderer = new TurnResponseRenderer();
+        return new EmployeeBot(resolver, new FakeConversationIntentService(intent), dispatcher, renderer, new CardFactory(renderer));
     }
 
     public static TestAdapter Adapter() => new(new ConversationReference
