@@ -27,11 +27,12 @@ public sealed class EmployeeBot(
     {
         try
         {
-            // Always resolve (don't short-circuit on a missing AadObjectId): the Bot Framework Emulator doesn't
-            // set one, and the dev identity shortcut ignores it. Real Teams always provides it; with real Graph
-            // an empty id resolves to unmapped -> the FR-4.3 message below.
-            string aadObjectId = turnContext.Activity.From?.AadObjectId ?? string.Empty;
-            CallerIdentity? caller = await identity.ResolveAsync(aadObjectId, cancellationToken);
+            // Prefer the AAD object id (real Teams); fall back to From.Id so the Bot Framework Emulator's
+            // "User ID" can drive identity in dev (the dev directory reads a numeric id as the employee number).
+            string identityKey = turnContext.Activity.From?.AadObjectId is { Length: > 0 } aadObjectId
+                ? aadObjectId
+                : turnContext.Activity.From?.Id ?? string.Empty;
+            CallerIdentity? caller = await identity.ResolveAsync(identityKey, cancellationToken);
 
             if (caller is null)
             {
@@ -75,8 +76,10 @@ public sealed class EmployeeBot(
             CallerRole role = CallerRole.Employee;
             try
             {
-                string aadObjectId = member.AadObjectId ?? turnContext.Activity.From?.AadObjectId ?? string.Empty;
-                CallerIdentity? caller = await identity.ResolveAsync(aadObjectId, cancellationToken);
+                string identityKey = member.AadObjectId is { Length: > 0 } aad
+                    ? aad
+                    : member.Id ?? turnContext.Activity.From?.Id ?? string.Empty;
+                CallerIdentity? caller = await identity.ResolveAsync(identityKey, cancellationToken);
                 role = caller?.Role ?? CallerRole.Employee;
             }
             catch

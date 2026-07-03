@@ -41,9 +41,13 @@ dotnet run --project src/EmployeeData.TeamsBot.Presentation.Bot
 }
 ```
 
-`Graph:DevEmployeeNumber` is a dev/demo shortcut - set it to a real employee number in the test data so a caller
-resolves without Microsoft Graph (which needs app credentials + TOQ-04). Then connect the **Bot Framework
-Emulator** to `http://localhost:5234/api/messages` (blank App ID / Password). Health: `GET /healthz`.
+`Graph:DevEmployeeNumber` is a dev/demo shortcut - the fallback employee a caller resolves to without Microsoft
+Graph (which needs app credentials + TOQ-04). Then connect the **Bot Framework Emulator** to
+`http://localhost:5234/api/messages` (blank App ID / Password). Health: `GET /healthz`.
+
+To **switch employees from the Emulator** without restarting, set **Settings -> User ID** to an employee number
+(e.g. `10412592`); the dev directory reads a numeric User ID as the employee number. A non-numeric User ID
+falls back to `Graph:DevEmployeeNumber`.
 
 Optional local Redis (used once F3-S4 state lands): `docker compose -f src/docker-compose.yml up -d`.
 
